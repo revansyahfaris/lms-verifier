@@ -31,7 +31,7 @@ lalu melepas reset PicoRV32 kalau lolos.
 Butuh: Git, Python 3, Icarus Verilog, GTKWave, `make`.
 
 ```bash
-git clone <url-repo>
+git clone https://github.com/revansyahfaris/lms-verifier.git
 cd lms-verifier
 make test        # jalankan semua testbench + unit test Python
 make sim TB=smoke   # jalankan satu testbench, lalu buka build/smoke.vcd di GTKWave
