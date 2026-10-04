@@ -1,0 +1,2 @@
+pytest>=7
+# Tambahkan library LMS yang dipilih tim di sini setelah dicek dengan Test Case 1.
