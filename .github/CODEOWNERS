@@ -1,0 +1,14 @@
+# Ganti @username dengan username GitHub anggota tim.
+# Pemilik otomatis diminta review saat file miliknya berubah.
+/docs/kontrak.md   @KETUA
+/rtl/common/       @KETUA
+/rtl/sha256/       @RTL_A
+/rtl/lms/          @RTL_A
+/rtl/stub/         @RTL_B
+/rtl/top/          @RTL_B
+/quartus/          @RTL_B
+/tb/               @VERIF
+/tv/               @VERIF
+/python/           @VERIF
+/sw/               @VERIF
+/docs/proposal/    @SECURITY
