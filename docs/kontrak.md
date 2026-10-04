@@ -1,6 +1,6 @@
 # Kontrak Teknis Tim — Verifier LMS (PERURI Chip Hackathon 2026)
 
-Status: **DRAF v0.2, untuk direview bersama**. Setelah disepakati, perubahan apa pun harus lewat diskusi tim dan dicatat di bagian Riwayat Perubahan.
+Status: **DRAF v0.3, untuk direview bersama**. Setelah disepakati, perubahan apa pun harus lewat diskusi tim dan dicatat di bagian Riwayat Perubahan.
 
 Dokumen ini adalah "kesepakatan colokan": parameter, antarmuka modul, format data uji, peta register, dan aturan repo. Selama semua orang mengikuti dokumen ini, empat orang bisa bekerja paralel dan hasilnya tetap bisa disambung.
 
@@ -505,9 +505,35 @@ Makefile    make tv · make test · make lint
 
 ---
 
+## Aturan testbench dan lingkungan kerja
+
+### Testbench
+- Setiap tes punya dua file: `tb/tb_<nama>.v` (testbench) dan `tb/<nama>.f`
+  (daftar file yang di-compile, path dari root repo).
+- Testbench wajib mencetak tepat salah satu:
+  - `TEST PASSED` kalau semua cek benar
+  - `TEST FAILED: <alasan>` kalau ada yang salah
+- Testbench wajib memanggil `$finish` dan punya batas waktu (timeout).
+- Data uji dibaca dari `tv/` dengan `$readmemh`, tidak ditulis manual.
+- `make test` harus lolos di laptop sebelum push. CI di GitHub menjalankan
+  perintah yang sama di setiap push ke `main` dan setiap Pull Request.
+- Kalau `main` merah, orang yang terakhir push memperbaikinya dulu.
+
+### Instal alat
+| OS | Perintah |
+| --- | --- |
+| Arch / EndeavourOS | `sudo pacman -S iverilog gtkwave python-pytest make` |
+| Ubuntu / WSL | `sudo apt install iverilog gtkwave python3-pytest make` |
+| Windows | Pakai WSL (Ubuntu), lalu ikuti baris Ubuntu |
+
+Cek setup: `make test` harus menampilkan `smoke  lolos`.
+
+___
+
 ## Riwayat perubahan
 
 | Versi | Tanggal | Perubahan | Disetujui |
 | --- | --- | --- | --- |
 | 0.1 | 3 Okt 2026 | Draf awal | — |
 | 0.2 | 3 Okt 2026 | Data uji resmi RFC 8554 ditambahkan; parameter `RAW_MSG_MODE` | — |
+| 0.3 | 3 Okt 2026 | Tambah aturan testbench, CI, dan perintah install per OS | - |
