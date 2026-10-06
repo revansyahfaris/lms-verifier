@@ -1,5 +1,6 @@
 # Pemakaian:
 #   make test            -> semua testbench (tb/*.f) + unit test Python
+#   make tv              -> buat ulang seluruh data uji tv/ (deterministik)
 #   make sim TB=smoke    -> satu testbench, simpan waveform di build/<TB>.vcd
 #   make clean
 IVERILOG ?= iverilog
@@ -9,7 +10,7 @@ FLAGS    := -g2012 -Wall -I rtl/common
 
 TBS := $(basename $(notdir $(wildcard tb/*.f)))
 
-.PHONY: test sim rtl-test py-test clean
+.PHONY: test tv sim rtl-test py-test clean
 
 test: rtl-test py-test
 
@@ -32,6 +33,9 @@ sim:
 
 py-test:
 	@$(PYTHON) -m pytest -q python/tests
+
+tv:
+	@$(PYTHON) python/gen_vectors.py
 
 clean:
 	rm -rf build
