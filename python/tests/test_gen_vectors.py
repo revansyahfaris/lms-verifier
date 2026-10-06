@@ -23,20 +23,9 @@ def tv(tmp_path_factory):
     return out
 
 
-def test_sha256_blocks_aligned(tv):
-    blocks = (tv / "sha256" / "blocks.hex").read_text().split()
-    sin = (tv / "sha256" / "state_in.hex").read_text().split()
-    sout = (tv / "sha256" / "state_out.hex").read_text().split()
-    assert len(blocks) == len(sin) == len(sout) == 5
-    assert all(len(b) == 128 for b in blocks)          # 512 bit = 128 hex
-    assert all(len(h) == 64 for h in sout)             # 256 bit = 64 hex
-
-
-def test_sha256_block1_is_abc(tv):
-    import hashlib
-    blocks = (tv / "sha256" / "blocks.hex").read_text().split()
-    sout = (tv / "sha256" / "state_out.hex").read_text().split()
-    assert hashlib.sha256(bytes.fromhex(blocks[0])).hexdigest() == sout[0]
+def test_no_sha256_dir(tv):
+    # tv/sha256/ tidak dibuat oleh gen_vectors.py (milik gen_sha256_tv.py RTL A)
+    assert not (tv / "sha256").exists()
 
 
 def test_case_structure(tv):
