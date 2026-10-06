@@ -355,8 +355,8 @@ def main():
     out = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_OUT
 
     # Bersihkan hanya subfolder yang kita kelola. tv/sha256/ TIDAK disentuh:
-    # data uji SHA-256 dibuat oleh gen_sha256_tv.py milik RTL A (25 blok
-    # lengkap + nilai perantara), bukan oleh skrip ini, supaya tidak bentrok.
+    # data uji SHA-256 dibuat oleh python/gen_sha256_vectors.py milik RTL A
+    # (dipanggil oleh `make tv`), bukan oleh skrip ini, supaya tidak bentrok.
     for d in out.iterdir() if out.exists() else []:
         if d.is_dir() and (d.name.startswith(("valid_", "bad_", "wrong_key",
                                                "rollback", "random_flip_",
@@ -379,7 +379,7 @@ def main():
     print(f"random_flip_*        : {len(rand_names)} kasus")
     print(f"rfc_*                : {len(rfc_names)} kasus")
     print(f"TOTAL                : {total} kasus -> {out}")
-    print("(tv/sha256/ tidak dibuat di sini; itu milik gen_sha256_tv.py RTL A)")
+    print("(tv/sha256/ tidak dibuat di sini; itu milik python/gen_sha256_vectors.py RTL A)")
 
 
 if __name__ == "__main__":

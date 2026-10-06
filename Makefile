@@ -35,6 +35,7 @@ py-test:
 	@$(PYTHON) -m pytest -q python/tests
 
 tv:
+	@$(PYTHON) python/gen_sha256_vectors.py
 	@$(PYTHON) python/gen_vectors.py
 
 clean:
