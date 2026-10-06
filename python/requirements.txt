@@ -1,2 +1,4 @@
 pytest>=7
-# Tambahkan library LMS yang dipilih tim di sini setelah dicek dengan Test Case 1.
+# Library LMS pembanding; sudah dicek cocok dengan Test Case 1 RFC 8554
+# (tanda tangan asli valid, bit-flip ditolak) — Verifikasi, 6 Okt 2026.
+pyhsslms>=2.0
