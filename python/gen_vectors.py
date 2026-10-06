@@ -37,12 +37,6 @@ SIG_LEN = 1296  # tanda tangan HSS L=1 penuh
 N_RANDOM = 200  # jumlah kasus bit-flip acak
 RANDOM_SEED = 0xC0FFEE
 
-# Blok rantai Winternitz (kontrak bagian 3.3): I||q||i||j||tmp||0x80||len
-# panjangnya tetap 55 byte data + padding = 64 byte, state_in = IV SHA-256.
-SHA256_IV = bytes.fromhex(
-    "6a09e667bb67ae853c6ef372a54ff53a510e527f9b05688c1f83d9ab5be0cd19"
-)
-
 
 # ---------------------------------------------------------------------------
 # Penulis berkas kecil
@@ -171,48 +165,6 @@ def write_case(out, name, pub_bytes, sig_bytes, img_bytes, expect, raw_mode=Fals
 
     write_expect(case_dir / "expect.txt", expect["result"], expect["err"],
                  expect["version"])
-
-
-# ---------------------------------------------------------------------------
-# Blok SHA-256 (tv/sha256/) untuk sha256_compress dan lmots_chain
-# ---------------------------------------------------------------------------
-
-def chain_block(I, q, i, j, tmp):
-    """Satu blok SHA-256 rantai Winternitz sesuai kontrak bagian 3.3."""
-    data = I + struct.pack(">I", q) + struct.pack(">H", i) + bytes([j]) + tmp
-    assert len(data) == 55
-    return data + b"\x80" + struct.pack(">Q", 440)
-
-
-def gen_sha256_blocks(out, demo):
-    """Berkas tv/sha256/: blocks.hex, state_in.hex, state_out.hex (sejajar)."""
-    import hashlib
-    blocks, state_out = [], []
-
-    # 1. Blok "abc" ter-padding
-    blocks.append(
-        b"abc" + b"\x80" + b"\x00" * 52 + struct.pack(">Q", 24)
-    )
-    # 2. Blok pesan kosong
-    blocks.append(b"\x80" + b"\x00" * 55 + struct.pack(">Q", 0))
-    # 3-5. Tiga blok pertama rantai ke-0 data uji (dari kunci demo, q=0)
-    I, q, i = demo.I, 0, 0
-    x0 = lms_ref.lmots_chain_element(I, demo.seed, q, i, demo.ots)
-    tmp = x0
-    for j in range(3):
-        blocks.append(chain_block(I, q, i, j, tmp))
-        tmp = lms_ref.H(I + struct.pack(">I", q) + struct.pack(">H", i)
-                        + bytes([j]) + tmp)
-
-    for b in blocks:
-        assert len(b) == 64
-        state_out.append(hashlib.sha256(b).hexdigest())
-
-    sha_dir = out / "sha256"
-    write_hex_lines(sha_dir / "blocks.hex", [b.hex() for b in blocks])
-    write_hex_lines(sha_dir / "state_in.hex", [SHA256_IV.hex()] * len(blocks))
-    write_hex_lines(sha_dir / "state_out.hex", state_out)
-    return len(blocks)
 
 
 # ---------------------------------------------------------------------------
@@ -402,11 +354,9 @@ def gen_rfc_cases(out):
 def main():
     out = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_OUT
 
-    # Bersihkan hanya subfolder yang kita kelola (jangan sentuh README/core_mock)
-    for sub in ("sha256",):
-        d = out / sub
-        if d.exists():
-            shutil.rmtree(d)
+    # Bersihkan hanya subfolder yang kita kelola. tv/sha256/ TIDAK disentuh:
+    # data uji SHA-256 dibuat oleh gen_sha256_tv.py milik RTL A (25 blok
+    # lengkap + nilai perantara), bukan oleh skrip ini, supaya tidak bentrok.
     for d in out.iterdir() if out.exists() else []:
         if d.is_dir() and (d.name.startswith(("valid_", "bad_", "wrong_key",
                                                "rollback", "random_flip_",
@@ -418,19 +368,18 @@ def main():
     demo = lms_ref.demo_key()
     pub_bytes = demo.public_key_bytes()
 
-    n_blocks = gen_sha256_blocks(out, demo)
     valid_names, base_img, img_v2 = gen_valid_cases(out, demo, pub_bytes)
     bad_names = gen_bad_cases(out, demo, pub_bytes, base_img, img_v2)
     rand_names = gen_random_cases(out, demo, pub_bytes, base_img)
     rfc_names = gen_rfc_cases(out)
 
     total = (len(valid_names) + len(bad_names) + len(rand_names) + len(rfc_names))
-    print(f"tv/sha256            : {n_blocks} blok")
     print(f"valid_*              : {len(valid_names)} kasus")
     print(f"bad_* / wrong_key / rollback : {len(bad_names)} kasus")
     print(f"random_flip_*        : {len(rand_names)} kasus")
     print(f"rfc_*                : {len(rfc_names)} kasus")
     print(f"TOTAL                : {total} kasus -> {out}")
+    print("(tv/sha256/ tidak dibuat di sini; itu milik gen_sha256_tv.py RTL A)")
 
 
 if __name__ == "__main__":
