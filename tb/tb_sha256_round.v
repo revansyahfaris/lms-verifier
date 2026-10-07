@@ -3,10 +3,11 @@
 `timescale 1ns/1ps
 `default_nettype none
 module tb_sha256_round;
-    localparam MAXV = 64;
+    // NV harus sama dengan jumlah baris tv/sha256/round_{in,out}.hex (dicetak oleh generator).
+    localparam NV = 16;
 
-    reg [319:0] vin  [0:MAXV-1];
-    reg [255:0] vout [0:MAXV-1];
+    reg [319:0] vin  [0:NV-1];
+    reg [255:0] vout [0:NV-1];
 
     reg  [31:0] a, b, c, d, e, f, g, h, w, k;
     wire [31:0] ao, bo, co, do_, eo, fo, go, ho;
@@ -17,7 +18,7 @@ module tb_sha256_round;
         .a_o(ao), .b_o(bo), .c_o(co), .d_o(do_), .e_o(eo), .f_o(fo), .g_o(go), .h_o(ho)
     );
 
-    integer i, n, no, errors;
+    integer i, n, errors;
 
     initial begin
 `ifdef DUMP_VCD
@@ -27,12 +28,12 @@ module tb_sha256_round;
         errors = 0;
         $readmemh("tv/sha256/round_in.hex",  vin);
         $readmemh("tv/sha256/round_out.hex", vout);
-        n  = 0; while (n  < MAXV && ^vin[n]  !== 1'bx) n  = n + 1;
-        no = 0; while (no < MAXV && ^vout[no] !== 1'bx) no = no + 1;
-        if (n == 0 || n != no) begin
-            $display("TEST FAILED: file round_in/round_out kosong atau jumlah barisnya tidak sama");
-            $finish;
-        end
+        n = NV;
+        for (i = 0; i < NV; i = i + 1)
+            if (^vin[i] === 1'bx || ^vout[i] === 1'bx) begin
+                $display("TEST FAILED: tv/sha256/round_*.hex kurang dari %0d baris (sesuaikan NV)", NV);
+                $finish;
+            end
         for (i = 0; i < n; i = i + 1) begin
             {a, b, c, d, e, f, g, h, w, k} = vin[i];
             #1;

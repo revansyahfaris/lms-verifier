@@ -1,0 +1,22 @@
+[*]
+[*] Tampilan waveform sha256_compress: satu hash "abc" (blok 0), dari start sampai done.
+[*] Pakai (dari root repo): make sim TB=sha256 && gtkwave build/sha256.vcd docs/sha256_abc.gtkw
+[*]
+[dumpfile] "build/sha256.vcd"
+[timestart] 60000
+[size] 1800 340
+[pos] -1 -1
+*-18.03 1370000 90000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 200
+[signals_width] 200
+[sst_expanded] 0
+[sst_vpaned_height] 150
+@28
+tb_sha256.clk
+tb_sha256.start
+tb_sha256.busy
+tb_sha256.done
+@22
+tb_sha256.state_out[255:0]
+[pattern_trace] 1
+[pattern_trace] 0

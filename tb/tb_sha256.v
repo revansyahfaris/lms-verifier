@@ -8,7 +8,10 @@
 `timescale 1ns/1ps
 `default_nettype none
 module tb_sha256;
-    localparam MAXV = 256;
+    // NV harus sama dengan jumlah baris tv/sha256/{blocks,state_in,state_out}.hex
+    // (python/gen_sha256_vectors.py mencetak jumlahnya). Kalau file kurang dari NV baris,
+    // tes gagal dengan pesan jelas; ukuran pas juga menghindari peringatan $readmemh.
+    localparam NV = 25;
 
     reg          clk = 1'b0;
     reg          rst = 1'b1;
@@ -18,9 +21,9 @@ module tb_sha256;
     wire [255:0] state_out;
     wire         done, busy;
 
-    reg [511:0] blocks     [0:MAXV-1];
-    reg [255:0] states_in  [0:MAXV-1];
-    reg [255:0] states_out [0:MAXV-1];
+    reg [511:0] blocks     [0:NV-1];
+    reg [255:0] states_in  [0:NV-1];
+    reg [255:0] states_out [0:NV-1];
 
     sha256_compress dut (
         .clk(clk), .rst(rst), .start(start),
@@ -30,7 +33,7 @@ module tb_sha256;
 
     always #10 clk = ~clk;   // 50 MHz
 
-    integer n, nb, ni, no;
+    integer n;
     integer i, cycles, max_cycles, errors;
 
     initial begin
@@ -44,15 +47,12 @@ module tb_sha256;
         $readmemh("tv/sha256/state_in.hex",  states_in);
         $readmemh("tv/sha256/state_out.hex", states_out);
 
-        // jumlah baris terisi = entri pertama yang masih x
-        nb = 0; while (nb < MAXV && ^blocks[nb]     !== 1'bx) nb = nb + 1;
-        ni = 0; while (ni < MAXV && ^states_in[ni]  !== 1'bx) ni = ni + 1;
-        no = 0; while (no < MAXV && ^states_out[no] !== 1'bx) no = no + 1;
-        n = nb;
-        if (n == 0 || ni != nb || no != nb) begin
-            $display("TEST FAILED: file tv/sha256 kosong atau jumlah barisnya tidak sama");
-            $finish;
-        end
+        n = NV;
+        for (i = 0; i < NV; i = i + 1)
+            if (^blocks[i] === 1'bx || ^states_in[i] === 1'bx || ^states_out[i] === 1'bx) begin
+                $display("TEST FAILED: tv/sha256 kurang dari %0d baris (sesuaikan NV dengan jumlah baris)", NV);
+                $finish;
+            end
 
         repeat (3) @(negedge clk);
         rst = 1'b0;
